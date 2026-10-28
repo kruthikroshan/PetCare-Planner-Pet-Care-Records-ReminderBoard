@@ -6,7 +6,8 @@
     "server": "node --watch server/index.js",
     "client": "npm --prefix client run dev",
     "build": "npm --prefix client run build",
-    "test": "node --test server/tests/*.test.js"
+    "test": "node --test server/tests/*.test.js",
+    "seed": "node server/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -21,6 +21,21 @@ npm run dev
 
 Open `http://localhost:5173`. The API runs on `http://localhost:5000`.
 
+## Sample login
+
+After MongoDB is running, load a ready-to-use demo account with sample pets and reminders:
+
+```powershell
+npm run seed
+```
+
+Then sign in with:
+
+- **Email:** `demo@petcareplanner.com`
+- **Password:** `PetCare123!`
+
+Running the seed command resets only this demo account's pets and care records.
+
 ## API
 
 - `POST /api/auth/register` and `POST /api/auth/login`
