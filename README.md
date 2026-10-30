@@ -20,6 +20,12 @@ Set-Location ..
 npm run dev
 ```
 
+Before starting the API, set `JWT_SECRET` in `.env` to a random secret generated with:
+
+```powershell
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
 Open `http://localhost:5173`. The API runs on `http://localhost:5000`.
 
 ## Sample login

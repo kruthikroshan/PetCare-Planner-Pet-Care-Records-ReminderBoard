@@ -6,7 +6,7 @@
     "server": "node --watch server/index.js",
     "client": "npm --prefix client run dev",
     "build": "npm --prefix client run build",
-    "test": "node --test server/tests/*.test.js",
+    "test": "node --test",
     "seed": "node server/seed.js"
   },
   "dependencies": {
