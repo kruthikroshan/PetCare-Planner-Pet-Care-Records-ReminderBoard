@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PetCare Planner
 
 PetCare Planner is a record-keeping application for pet profiles, care records, appointments, and upcoming or overdue care dates. It is not a veterinary diagnosis or treatment service.
@@ -64,3 +65,6 @@ With dependencies installed:
 npm test
 npm run build
 ```
+=======
+# PetCare-Planner-Pet-Care-Records-ReminderBoard
+>>>>>>> origin/main
