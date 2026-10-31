@@ -8,6 +8,7 @@ const { getJwtSecret } = require("./config/jwt");
 const authRoutes = require("./routes/auth");
 const petRoutes = require("./routes/pets");
 const careRecordRoutes = require("./routes/careRecords");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
@@ -18,6 +19,7 @@ app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/pets", petRoutes);
 app.use("/api/care-records", careRecordRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.use((err, _req, res, _next) => {
   if (err.type === "entity.too.large") return res.status(413).json({ message: "Request body is too large." });

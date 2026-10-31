@@ -4,13 +4,25 @@ const CareRecord = require("../models/CareRecord");
 const { requireAuth } = require("../middleware/auth");
 
 const allowed = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
-const cleanPet = (body) => ({
-  name: String(body.name || "").trim(),
-  species: body.species,
-  breed: String(body.breed || "").trim(),
-  birthDate: body.birthDate || undefined,
-  notes: String(body.notes || "").trim()
-});
+const petFields = ["name", "species", "breed", "birthDate", "notes"];
+const cleanPet = (body, { partial = false } = {}) => {
+  const pet = {};
+  for (const field of petFields) {
+    if (partial && !Object.prototype.hasOwnProperty.call(body, field)) continue;
+    if (field === "name" || field === "breed" || field === "notes") pet[field] = String(body[field] || "").trim();
+    else pet[field] = body[field] || undefined;
+  }
+  return pet;
+};
+
+const validatePet = (pet, { partial = false } = {}) => {
+  if (!partial && (!pet.name || !allowed.includes(pet.species))) return "Name and a supported species are required.";
+  if (pet.name !== undefined && !pet.name) return "Pet name is required.";
+  if (pet.species !== undefined && !allowed.includes(pet.species)) return "Species is not supported.";
+  if (pet.birthDate !== undefined && Number.isNaN(new Date(pet.birthDate).getTime())) return "Birth date must be a valid date.";
+  if (pet.birthDate && new Date(pet.birthDate) > new Date()) return "Birth date cannot be in the future.";
+  return null;
+};
 
 router.use(requireAuth);
 router.get("/", async (req, res, next) => {
@@ -19,8 +31,8 @@ router.get("/", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const pet = cleanPet(req.body);
-    if (!pet.name || !allowed.includes(pet.species)) return res.status(400).json({ message: "Name and a supported species are required." });
-    if (pet.birthDate && new Date(pet.birthDate) > new Date()) return res.status(400).json({ message: "Birth date cannot be in the future." });
+    const validationMessage = validatePet(pet);
+    if (validationMessage) return res.status(400).json({ message: validationMessage });
     return res.status(201).json(await Pet.create({ ...pet, ownerId: req.user.id }));
   } catch (error) { return next(error); }
 });
@@ -33,9 +45,11 @@ router.get("/:id", async (req, res, next) => {
 });
 router.patch("/:id", async (req, res, next) => {
   try {
-    const pet = cleanPet(req.body);
-    if (!pet.name || !allowed.includes(pet.species)) return res.status(400).json({ message: "Name and a supported species are required." });
-    const updated = await Pet.findOneAndUpdate({ _id: req.params.id, ownerId: req.user.id }, pet, { new: true, runValidators: true });
+    const pet = cleanPet(req.body, { partial: true });
+    const validationMessage = validatePet(pet, { partial: true });
+    if (validationMessage) return res.status(400).json({ message: validationMessage });
+    if (!Object.keys(pet).length) return res.status(400).json({ message: "At least one pet field is required." });
+    const updated = await Pet.findOneAndUpdate({ _id: req.params.id, ownerId: req.user.id }, { $set: pet }, { new: true, runValidators: true });
     if (!updated) return res.status(404).json({ message: "Pet not found." });
     return res.json(updated);
   } catch (error) { return next(error); }
@@ -60,7 +74,8 @@ router.post("/:id/care-records", async (req, res, next) => {
     const pet = await Pet.exists({ _id: req.params.id, ownerId: req.user.id });
     if (!pet) return res.status(404).json({ message: "Pet not found." });
     const record = { ...req.body, petId: req.params.id, ownerId: req.user.id };
-    if (!record.title || !record.careType || !record.eventDate) return res.status(400).json({ message: "Care type, title, and event date are required." });
+    const validationMessage = CareRecord.validateInput(record);
+    if (validationMessage) return res.status(400).json({ message: validationMessage });
     return res.status(201).json(await CareRecord.create(record));
   } catch (error) { return next(error); }
 });

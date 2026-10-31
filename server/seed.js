@@ -7,10 +7,24 @@ const CareRecord = require("./models/CareRecord");
 
 async function seed() {
   await mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/petcare_planner");
+  const admins = [
+    { name: "Nithin", email: "nithin@gmail.com", password: "12345678" },
+    { name: "Kruthik", email: "kruthik@gmail.com", password: "12345678" },
+    { name: "Siddarth", email: "siddarth@gmail.com", password: "12345678" },
+    { name: "Vasu", email: "vasu@gmail.com", password: "12345678" },
+    { name: "Meghana", email: "meghana@gmail.com", password: "12345678" }
+  ];
+  for (const admin of admins) {
+    await User.findOneAndUpdate(
+      { email: admin.email },
+      { name: admin.name, email: admin.email, role: "admin", passwordHash: await bcrypt.hash(admin.password, 12) },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
   const email = "demo@petcareplanner.com";
   const user = await User.findOneAndUpdate(
     { email },
-    { name: "Demo User", email, passwordHash: await bcrypt.hash("PetCare123!", 12) },
+    { name: "Demo User", email, role: "user", passwordHash: await bcrypt.hash("PetCare123!", 12) },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 
@@ -26,6 +40,8 @@ async function seed() {
     { ownerId: user._id, petId: maple._id, careType: "Appointment", title: "Dental check-up", eventDate: "2026-05-04", nextDueDate: "2026-10-20", providerName: "Green Paws Clinic" }
   ]);
   console.log(`Demo account ready: ${email} / PetCare123!`);
+  console.log("Admin accounts ready:");
+  admins.forEach(({ email: adminEmail, password }) => console.log(`- ${adminEmail} / ${password}`));
   await mongoose.disconnect();
 }
 
