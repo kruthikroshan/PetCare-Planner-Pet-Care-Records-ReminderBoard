@@ -27,11 +27,25 @@ app.use((err, _req, res, _next) => {
 
 async function start() {
   const port = process.env.PORT || 5000;
+
   if (require.main === module) {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/petcare_planner");
-    app.listen(port, () => console.log(`API listening on port ${port}`));
+    try {
+      await mongoose.connect(
+        process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/petcare_planner"
+      );
+
+      console.log("MongoDB connected successfully");
+
+      app.listen(port, () => {
+        console.log(`API listening on port ${port}`);
+      });
+    } catch (error) {
+      console.error("MongoDB connection failed:", error.message);
+      process.exit(1);
+    }
   }
 }
+
 
 start().catch((error) => {
   console.error("Unable to start API:", error.message);
